@@ -1,6 +1,6 @@
 """
     Model training
-    Trying the dataset droplet_sim_2prjs_1exp_15frames_stride5.h5
+    Using the dataset droplet_sim_2prjs_1exp_15frames_stride5.h5
     With/without PINN (random dice mode)
     Angle: 0, 23.8
 """
@@ -32,14 +32,11 @@ opt.noise_decay_factor = 0.9  # default 0.001
 opt.activation = nn.SiLU()
 opt.input_view_idx = "random"  # default: None
 opt.gpu_id = 0    # default 0
-#opt.val_view_idx = [0,1]   # default:'1,3,5,7'
-#opt.val_idx = 0   # default:9
 opt.use_camera_space_pnts = False   # default True, for the version with encoder, it has to be true
 opt.enable_encoding_fn_time = True # default True
 opt.enable_encoding_fn_xyz = True  # default True
 opt.num_encoding_fn_xyz = 10        # default 10
 opt.num_encoding_fn_time = 6       # default 6
-#opt.index_interp = "nearest"      # default "bilinear"
 
 opt.load_path = "../droplet_reproducible_sim/droplet_sim_2prjs_1exp_15frames_stride5.h5"
 opt.batch_size = 1    # default 2
@@ -57,7 +54,6 @@ opt.print_loss_freq_iter = 10   # default 10
 opt.save_model_freq_epoch = 800 # default 10
 opt.save_plot_freq_epoch = 800  # default 5, no longer relevant
 opt.num_epochs = 9600          # default 1000
-#opt.num_encoder_epochs = 800      # default 10000
 
 opt.start_time = 1.493138*0/199           # default 0
 opt.end_time = 1.493138*70/199    # default 1
@@ -86,10 +82,6 @@ opt.random_proj = False   # default False
 opt.num_pts_ratio = 6      # default 1
 
 opt.random_time_stamp = False # default False
-
-#opt.load_pretrain = True 
-#opt.model_path = '../droplet_23/results/Feb12_14_49'
-#opt.load_epoch = 200
 
 #####################
 model = TrainModel(opt)
@@ -130,48 +122,7 @@ for epoch in range(opt.num_epochs):
         if i % opt.print_loss_freq_iter == opt.print_loss_freq_iter - 1:
             losses = model.get_current_losses()
             model.print_current_losses(epoch=epoch, iters=i, losses=losses)
-    
-    '''
-    # model eval to have a brief look (optional)
-    if (
-        epoch == 0
-        or epoch % opt.save_plot_freq_epoch == opt.save_plot_freq_epoch - 1
-        ):
-        with torch.no_grad():
-            model.generate_3D = True
-            model.opt.perturb = False
-            model.opt.n_views = 2  # for val, input all 2 views
-            model.reshaped_3d_att = []
-            model.reshaped_3d_phase = []
-            model.attenuation_path = f"{opt.run_path}/{opt.run_name}/attenuation"
-            #model.phase_path = f"{opt.run_path}/{opt.run_name}/phase"
-            model.create_dir_if_not_exist(model.attenuation_path)
-            for obj_idx in range(0,75,15):  #(0,200,50)
-                opt.test_obj_idx = obj_idx
-                test_dataset = TestDataset(opt)
-                test_loader = torch.utils.data.DataLoader(
-                    dataset=test_dataset,
-                    batch_size=1,
-                    shuffle=False,
-                    num_workers=8,
-                    pin_memory=True,
-                )
-                for k, test_data in enumerate(test_loader):
-                    print(k)
-                    if k == 0:
-                        model.set_input(test_data[:num_input])
-                        model.validation()
-                        #losses = model.get_val_losses()
-                        #model.print_val_losses(epoch=epoch, iters=i, losses=losses)
-                        #model.visual_iter(epoch, k, test_data[num_input].item())
-            #to_save_att = np.array(model.reshaped_3d_att)
-            #np.save(model.attenuation_path+'/att_'+str(epoch)+'.npy',to_save_att)
-            model.generate_3D = False
-            model.opt.perturb = True
-            model.opt.n_views = 1   # Set back the n_views fro training
-    else:
-        pass
-    '''
+            
     if (
         epoch == 0
         or epoch % opt.save_model_freq_epoch == opt.save_model_freq_epoch - 1
@@ -182,5 +133,3 @@ for epoch in range(opt.num_epochs):
         f"training time for {opt.run_name} epoch {epoch+1}: {now//60} min {(now - now//60*60):.2f} s"
         )
 print(destination)
-
-# %%
